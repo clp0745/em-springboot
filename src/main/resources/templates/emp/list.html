@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Dashboard Template for Bootstrap</title>
+
+		<!-- Bootstrap core CSS -->
+		<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+
+		<!-- Custom styles for this template -->
+		<link th:href="@{/css/dashboard.css}" rel="stylesheet">
+		<style type="text/css">
+			/* Chart.js */
+			
+			@-webkit-keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			@keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+			
+			.chartjs-render-monitor {
+				-webkit-animation: chartjs-render-animation 0.001s;
+				animation: chartjs-render-animation 0.001s;
+			}
+
+			.left{
+				float: left;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<!-- 员工添加模态框 -->
+		<div class="modal fade" id="empAddModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="staticBackdropLabel">员工添加</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form th:action="@{'/addEmp/'+${pageInfo.getPages()+1}}"  method="post">
+						<div class="form-group">
+							<label for="exampleInputName">姓名</label>
+							<input type="text" name="name" class="form-control" id="exampleInputName" placeholder="姓名" onblur="checkName()">
+							<div></div>
+						</div>
+						<div class="form-group">
+							<label>性别</label>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="gender" value="M" checked="checked">
+								<label class="form-check-label">男</label>
+							</div>
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="radio" name="gender" value="F">
+								<label class="form-check-label">女</label>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="exampleInputEmail">邮箱</label>
+							<input type="email" name="email" class="form-control" id="exampleInputEmail" placeholder="邮箱" onblur="checkEmail()">
+							<div>
+
+							</div>
+						</div>
+						<div class="form-group">
+							<!--我们在controller接收的是一个Employee，所以我们需要提交的是其中一个属性！-->
+							<select class="form-control" name="deptId">
+								<!--th:value赋值-->
+								<option th:each="dept:${depts}" th:text="${dept.getName()}" th:value="${dept.getId()}"></option>
+							</select>
+						</div>
+						<button type="submit" class="btn btn-primary" id="emp_save_btn" disabled>保存</button>
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+					</form>
+				</div>
+<!--				<div class="modal-footer">-->
+<!--					-->
+<!--				</div>-->
+			</div>
+		</div>
+	</div>
+
+		<div th:replace="~{common/common::topbar}"></div>
+
+		<div class="container-fluid">
+			<div class="row">
+
+				<div th:replace="~{common/common::sidebar(active='list.html')}"></div>
+
+				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+					<div class="row">
+						<div class="col-md-9">
+							<h2>员工信息</h2>
+						</div>
+						<div class="col-md-3 col-md-offset-8">
+							<a type="button" class="btn btn-primary" id="emp_add_modal_btn" style="color: #fff;">新增</a>
+						</div>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-striped table-sm">
+							<thead>
+								<tr>
+									<th>id</th>
+									<th>姓名</th>
+									<th>性别</th>
+									<th>邮箱</th>
+									<th>部门</th>
+									<th>操作</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!--/*@thymesVar id="emps" type="com.clp.controller.EmployeeController"*/-->
+								<tr th:each="emp:${pageInfo.getList()}">
+									<td th:text="${emp.getId()}"></td>
+									<td th:text="${emp.getName()}"></td>
+									<td th:text="${emp.getGender()=='M'?'男':'女'}"></td>
+									<td th:text="${emp.getEmail()}"></td>
+									<td th:text="${emp.getDeptId()==1?'开发部':'测试部'}"></td>
+									<td>
+										<a class="btn btn-sm btn-primary" th:href="@{'/emp/'+${emp.getId()}+'/'+${pageInfo.getPageNum()}}">编辑</a>
+										<a class="btn btn-sm btn-danger"  id="del_btn" style="color: #fff;">删除</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<!--显示分页信息-->
+					<div class="row">
+						<!--分页文字信息-->
+						<div class="col-md-6">
+							<p th:text="'当前页'+${pageInfo.getPageNum()}+'，总共'+${pageInfo.getPages()}+'页，总共'+${pageInfo.getTotal()+'条记录'}"></p>
+							<input th:value="${pageInfo.getPageNum()}" type="hidden" id="pn">
+						</div>
+						<!--分页条信息-->
+						<div class="col-md-6">
+							<nav aria-label="Page navigation example left">
+								<ul class="pagination">
+									<li th:class="${pageInfo.isFirstPage==true}?'page-item disabled':'page-item'">
+										<a class="page-link" th:href="@{'emps?pn=1'}">首页</a>
+									</li>
+									<li th:class="${pageInfo.hasPreviousPage==false}?'page-item disabled':'page-item'">
+										<a class="page-link" th:href="@{'emps?pn='+${pageInfo.getPrePage()}}" aria-label="Previous">
+											<span aria-hidden="true">&laquo;</span>
+										</a>
+									</li>
+
+									<div th:each="item:${pageInfo.getNavigatepageNums()}">
+										<li th:class="${pageInfo.getPageNum()==item}?'page-item active':'page-item'">
+											<a th:text="${item}" class="page-link" th:href="@{'emps?pn='+${item}}"></a>
+										</li>
+									</div>
+
+
+									<li th:class="${pageInfo.hasNextPage==false}?'page-item disabled':'page-item'">
+										<a class="page-link" th:href="@{'emps?pn='+${pageInfo.getNextPage()}}" aria-label="Next">
+											<span aria-hidden="true">&raquo;</span>
+										</a>
+									</li>
+									<li th:class="${pageInfo.isLastPage==true}?'page-item disabled':'page-item'">
+										<a class="page-link" th:href="@{'emps?pn='+${pageInfo.getPages()+1}}">末页</a>
+									</li>
+								</ul>
+							</nav>
+						</div>
+					</div>
+				</main>
+			</div>
+		</div>
+
+		<!-- Bootstrap core JavaScript
+    ================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script type="text/javascript" th:src="@{/js/jquery-3.2.1.slim.min.js}" ></script>
+		<script type="text/javascript" th:src="@{/js/jquery-3.4.1.js}" ></script>
+		<script type="text/javascript" th:src="@{/js/popper.min.js}" ></script>
+		<script type="text/javascript" th:src="@{/js/bootstrap.min.js}" ></script>
+		<script>
+			$("#emp_add_modal_btn").click(function () {
+				$("#empAddModal").modal();
+			})
+			//鼠标失去焦点校验名字
+			function checkName() {
+				//拿到要校验的数据，使用正则表达式
+				var empName = $("#exampleInputName").val();
+				var regName = /(^[a-zA-Z0-9_-]{3,10}$)|(^[\u4e00-\u9fff]{2,5})/;//允许中文
+				if (!regName.test(empName)){
+					// alert("用户名可以使2-5位中文或者3-10位英文和数字的组合");
+					show_validate_msg("#exampleInputName","error","2-5位中文或者3-10位英文和数字的组合");
+					// return false;
+				}else {
+					show_validate_msg("#exampleInputName","success","");
+				}
+			}
+
+			//鼠标失去焦点校验邮箱
+			function checkEmail() {
+				var email = $("#exampleInputEmail").val();
+				var regEmail = /^([a-zA-Z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/;
+				if (!regEmail.test(email)){
+					// alert("邮箱格式不正确");
+					show_validate_msg("#exampleInputEmail","error","邮箱格式不正确");
+					// return false;
+				}else {
+					show_validate_msg("#exampleInputEmail","success","");
+					$("#emp_save_btn").removeAttr("disabled");
+				}
+				// return true;
+			}
+
+			//显示校验结果的提示信息
+			function show_validate_msg(ele,status,msg){
+				//应该清空当前元素的校验状态
+				$(ele).removeClass("is-invalid");
+				$(ele).next("div").removeClass("invalid-feedback");
+				if ("success"==status){
+					$(ele).removeClass("is-invalid");
+					$(ele).next("div").text(msg).removeClass("invalid-feedback");
+				}else if ("error"==status){
+					$(ele).addClass("is-invalid");
+					$(ele).next("div").text(msg).addClass("invalid-feedback");
+					$("#emp_save_btn").attr("disabled","disabled");
+				}
+			}
+
+			//删除
+			$(document).on("click","#del_btn",function () {
+				//弹出是否删除对话框
+				var empName = $(this).parents("tr").find("td:eq(1)").text();
+				var empId = $(this).parents("tr").find("td:eq(0)").text();
+				var pn = $("#pn").val();
+				if (confirm("确认删除【"+empName+"】吗？")){
+					//确认，发送ajax请求删除即可
+					$.ajax({
+						url:"/delEmp/"+empId,
+						type:"DELETE",
+						success:function (result) {
+							//回到本页
+							window.location.href = "emps?pn="+pn;
+						}
+					})
+				}
+			})
+
+
+		</script>
+
+		<!-- Icons -->
+		<script type="text/javascript" th:src="@{/js/feather.min.js}" ></script>
+		<script>
+			feather.replace()
+		</script>
+
+		<!-- Graphs -->
+		<script type="text/javascript" th:src="@{/js/Chart.min.js}" ></script>
+		<script>
+			var ctx = document.getElementById("myChart");
+			var myChart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+					datasets: [{
+						data: [15339, 21345, 18483, 24003, 23489, 24092, 12034],
+						lineTension: 0,
+						backgroundColor: 'transparent',
+						borderColor: '#007bff',
+						borderWidth: 4,
+						pointBackgroundColor: '#007bff'
+					}]
+				},
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero: false
+							}
+						}]
+					},
+					legend: {
+						display: false,
+					}
+				}
+			});
+		</script>
+
+	</body>
+
+</html>

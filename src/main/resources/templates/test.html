@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!--显示分页信息-->
+<div class="row">
+    <!--分页文字信息-->
+    <div class="col-md-6">
+        <p th:text="'当前页'+${pageInfo.getPageNum()}+'页，总共'+${pageInfo.getPages()}+'页，总共'+${pageInfo.getTotal()+'条记录'}"></p>
+    </div>
+    <!--分页条信息-->
+    <div class="col-md-6">
+        <nav aria-label="Page navigation example left">
+            <ul class="pagination">
+                <li class="page-item"><a th:class="${pageInfo.getPrePage()==false}? 'page-link disabled':'page-link'" th:href="@{'emps?pn=1'}">首页</a></li>
+                <li class="page-item">
+                    <a th:class="${pageInfo.getPrePage()==false}? 'page-link disabled':'page-link'" th:href="@{'emps?pn='+${pageInfo.getPrePage()}}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <div th:each="item:${pageInfo.getNavigatepageNums()}">
+                    <li class="page-item"><a th:text="${item}" th:class="${pageInfo.getPageNum()==item}? 'page-link active':'page-link'" th:href="@{'emps?pn='+${item}}"></a></li>
+                </div>
+
+
+                <li class="page-item">
+                    <a th:class="${pageInfo.getNextPage()==false}? 'page-link disabled':'page-link'" th:href="@{'emps?pn='+${pageInfo.getNextPage()}}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item"><a th:class="${pageInfo.getNextPage()==false}? 'page-link disabled':'page-link'" th:href="@{'emps?pn='+${pageInfo.getPages()+1}}">末页</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+</body>
+</html>
